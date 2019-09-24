@@ -1,0 +1,9 @@
+<p>Settings component as level 1 route</p>
+<ul>
+  <li *ngFor="let menuItem of settingsMenu">
+    <a [routerLink]="menuItem.route" routerLinkActive #rla="routerLinkActive">
+      {{menuItem.title}}
+    </a></li>
+</ul>
+
+<router-outlet></router-outlet>

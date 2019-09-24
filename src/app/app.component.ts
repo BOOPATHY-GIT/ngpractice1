@@ -1,0 +1,20 @@
+import { Component } from '@angular/core';
+
+@Component({
+  selector: 'app-root',
+  templateUrl: './app.component.html',
+  styleUrls: ['./app.component.css']
+})
+export class AppComponent {
+  title = 'test1';
+  public settingsMenu = [
+    {
+      title: 'API Keys',
+      route: 'api-keys'
+    },
+    {
+      title: 'My Profile',
+      route: 'my-profile'
+    }
+    ];
+}
