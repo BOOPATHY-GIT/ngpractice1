@@ -1,0 +1,68 @@
+Option Explicit
+
+' --- API Declarations for XInput (64-bit and 32-bit compatible) ---
+#If VBA7 Then
+    Private Declare PtrSafe Function XInputGetState Lib "xinput1_4.dll" (ByVal dwUserIndex As Long, ByRef pState As XINPUT_STATE) As Long
+#Else
+    Private Declare Function XInputGetState Lib "xinput1_4.dll" (ByVal dwUserIndex As Long, ByRef pState As XINPUT_STATE) As Long
+#End If
+
+' XInput Data Structures
+Private Type XINPUT_GAMEPAD
+    wButtons As Integer
+    bLeftTrigger As Byte
+    bRightTrigger As Byte
+    sThumbLX As Integer
+    sThumbLY As Integer
+    sThumbRX As Integer
+    sThumbRY As Integer
+End Type
+
+Private Type XINPUT_STATE
+    dwPacketNumber As Long
+    Gamepad As XINPUT_GAMEPAD
+End Type
+
+' D-pad Button Constants
+Const XINPUT_GAMEPAD_DPAD_UP = &H1
+Const XINPUT_GAMEPAD_DPAD_DOWN = &H2
+Const XINPUT_GAMEPAD_DPAD_LEFT = &H4
+Const XINPUT_GAMEPAD_DPAD_RIGHT = &H8
+
+Private Running As Boolean
+
+' --- The Main Controller Loop ---
+Sub StartControllerSupport()
+    Dim state As XINPUT_STATE
+    Dim lastButtons As Integer
+    Running = True
+    
+    ' Start the slideshow if not already running
+    On Error Resume Next
+    ActivePresentation.SlideShowSettings.Run
+    On Error GoTo 0
+
+    Do While Running
+        ' Get state of controller 0
+        If XInputGetState(0, state) = 0 Then
+            Dim currentButtons As Integer
+            currentButtons = state.Gamepad.wButtons
+            
+            ' Check for NEW button presses only (to avoid rapid skipping)
+            If (currentButtons And XINPUT_GAMEPAD_DPAD_RIGHT) And Not (lastButtons And XINPUT_GAMEPAD_DPAD_RIGHT) Then
+                ActivePresentation.SlideShowWindow.View.Next
+            ElseIf (currentButtons And XINPUT_GAMEPAD_DPAD_LEFT) And Not (lastButtons And XINPUT_GAMEPAD_DPAD_LEFT) Then
+                ActivePresentation.SlideShowWindow.View.Previous
+            End If
+            
+            lastButtons = currentButtons
+        End If
+        
+        DoEvents ' Keeps PowerPoint responsive
+    Loop
+End Sub
+
+Sub StopControllerSupport()
+    Running = False
+End Sub
+
